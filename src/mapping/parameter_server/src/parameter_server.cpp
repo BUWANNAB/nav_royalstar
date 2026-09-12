@@ -4,6 +4,7 @@
 #include <string>
 #include <cmath>
 #include <mutex>
+#include <cstdlib>
 
 /* #include <mysql-cppconn/jdbc/mysql_driver.h>
 #include <mysql-cppconn/jdbc/mysql_connection.h>
@@ -19,18 +20,24 @@
 #include <cppconn/exception.h>
 #include <cppconn/resultset.h>
 #include <cppconn/statement.h>
-#include "/home/lyrobot004/coverage_ws/build/parameter_server/rosidl_generator_cpp/parameter_server/srv/get_parameters.hpp"
+#include <parameter_server/srv/get_parameters.hpp>
 
 using namespace std;
 using namespace std::chrono_literals;
 using GetParameters = parameter_server::srv::GetParameters;
 
 // 数据库连接参数
-const string host = "localhost:3306";
-const string user = "root";
-const string password = "root";
-const string database_name = "db_ant";
-const string table_name = "t_param";
+string envOrDefault(const char *name, const char *fallback)
+{
+    const char *value = std::getenv(name);
+    return value && *value ? value : fallback;
+}
+
+const string host = envOrDefault("BLUEANT_DB_HOST", "localhost:3306");
+const string user = envOrDefault("BLUEANT_DB_USER", "root");
+const string password = envOrDefault("BLUEANT_DB_PASSWORD", "root");
+const string database_name = envOrDefault("BLUEANT_DB_NAME", "db_ant");
+const string table_name = envOrDefault("BLUEANT_DB_TABLE", "t_param");
 
 // 参数结构体
 struct ParameterSet {

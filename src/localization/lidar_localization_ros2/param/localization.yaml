@@ -11,9 +11,7 @@ lidar_localization:
     scan_min_range: 1.0
     scan_period: 0.1
     use_pcd_map: true
-    map_path: "/home/lyrobot004/inHome/pcd/test717/GlobalMap.pcd"
-    #map_path: "/home/lyrobot005/3Dpcd/GlobalMap.pcd"
-    #map_path: "/home/lyrobot003/3Dmap/map.pcd"
+    map_path: "/map/map.pcd"
     set_initial_pose: true
     # initial_pose_x: 0.0
     # initial_pose_y: 0.0

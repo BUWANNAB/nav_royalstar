@@ -56,12 +56,16 @@ def generate_launch_description():
             'param',
             'localization.yaml'))
 
+    map_path = os.environ.get(
+        'BLUEANT_MAP_PCD',
+        os.path.join(os.path.expanduser('~'), 'inHome', 'pcd', 'test717', 'GlobalMap.pcd'))
+
     lidar_localization = launch_ros.actions.LifecycleNode(
         name='lidar_localization',
         namespace='',
         package='lidar_localization_ros2',
         executable='lidar_localization_node',
-        parameters=[localization_param_dir],
+        parameters=[localization_param_dir, {'map_path': map_path}],
         remappings=[('/velodyne_points', '/livox/lidar'),
                     ('/odom', '/platform/odom/filtered'),
                     # ('/imu', '/platform/imu_1/data')],

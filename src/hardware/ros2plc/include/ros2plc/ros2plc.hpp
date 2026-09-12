@@ -118,8 +118,8 @@ private:
     rclcpp::TimerBase::SharedPtr timer_;
 
     modbus_t* ctx_ = nullptr;
-    const std::string server_ip_ = "192.168.8.30";
-    const int server_port_ = 502;
+    std::string server_ip_;
+    int server_port_;
     const int LINEAR_X_REGISTER = 0;
     const int LINEAR_Y_REGISTER = 2;
     const int ANGULAR_Z_REGISTER = 4;

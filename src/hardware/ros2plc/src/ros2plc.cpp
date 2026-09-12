@@ -8,6 +8,10 @@ ModbusMasterNode::ModbusMasterNode() :
    counter_(0),
    is_connected_(false), // 初始化连接状态为 false
    transform_broadcaster_(this){
+    server_ip_ = this->declare_parameter<std::string>("server_ip", "192.168.8.30");
+    server_port_ = this->declare_parameter<int>("server_port", 502);
+    RCLCPP_INFO(this->get_logger(), "Modbus endpoint: %s:%d", server_ip_.c_str(), server_port_);
+
     // 初始化 Modbus TCP 上下文
      // 初始化 Modbus TCP 上下文
     ctx_ = modbus_new_tcp(server_ip_.c_str(), server_port_);

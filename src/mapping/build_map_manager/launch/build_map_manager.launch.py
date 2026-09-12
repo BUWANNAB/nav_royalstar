@@ -9,7 +9,7 @@ from launch_ros.actions import Node
 def generate_launch_description():
     home = os.path.expanduser('~')
     lio_sam_workspace = os.environ.get(
-        'LIO_SAM_WS', os.path.join(home, 'lio_sam_test'))
+        'LIO_SAM_WS', os.path.join(home, 'blueant_nav_ws'))
     workspace_setup = os.environ.get(
         'LIO_SAM_SETUP', os.path.join(lio_sam_workspace, 'install', 'setup.bash'))
     map_base_dir = os.environ.get(

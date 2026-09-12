@@ -37,7 +37,7 @@ public:
     save_map_service_ = this->declare_parameter<std::string>("save_map_service", "/lio_sam/save_map");
 
     workspace_setup_ = this->declare_parameter<std::string>(
-      "workspace_setup", home_dir + "/lio_sam_test/install/setup.bash");
+      "workspace_setup", home_dir + "/blueant_nav_ws/install/setup.bash");
     map_base_dir_ = this->declare_parameter<std::string>(
       "map_base_dir", home_dir + "/inHome/pcd");
 

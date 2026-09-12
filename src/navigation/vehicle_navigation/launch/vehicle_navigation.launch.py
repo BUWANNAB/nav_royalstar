@@ -9,13 +9,17 @@ def generate_launch_description():
     
     # 构建参数文件绝对路径
     param_file = os.path.join(pkg_dir, 'param', 'purepursuit_params.yaml')
+    node_parameters = [param_file]
+    authorized_id = os.environ.get('BLUEANT_AUTHORIZED_HARDWARE_ID')
+    if authorized_id:
+        node_parameters.append({'authorized_hardware_id': authorized_id})
     
     return LaunchDescription([
         Node(
             package='vehicle_navigation',
             executable='vehicle_navigation_node',
             name='vehicle_navigation_node',
-            parameters=[param_file],  # 使用绝对路径加载参数文件
+            parameters=node_parameters,
             #arguments=['2'],  # 阿克曼车型
             output='screen',  # 可选：将输出打印到屏幕
             respawn=True,  # 关键配置：启用节点崩溃后自动重启 

@@ -915,7 +915,7 @@ void TrackedVehicleNavigation::PathPointCallback(const std_msgs::msg::Float64Mul
     
     _rev_path_point.data.clear();
     RCLCPP_INFO(this->get_logger(), "_Received_path: %d", _Received_path);
-    RCLCPP_INFO(this->get_logger(), "_path_point_number: %d", _path_point_number);
+    RCLCPP_INFO(this->get_logger(), "_path_point_number: %zu", _path_point_number);
 }
 
 //路径点左
@@ -942,7 +942,7 @@ void TrackedVehicleNavigation::PathPointLeftCallback(const std_msgs::msg::Float6
     
     _rev_path_point_left.data.clear();
     RCLCPP_INFO(this->get_logger(), "_Received_path_left: %d", _Received_path_left);
-    RCLCPP_INFO(this->get_logger(), "_path_point_number_left: %d", _path_point_number_left);
+    RCLCPP_INFO(this->get_logger(), "_path_point_number_left: %zu", _path_point_number_left);
 }
 
 //路径点右
@@ -969,7 +969,7 @@ void TrackedVehicleNavigation::PathPointRightCallback(const std_msgs::msg::Float
     
     _rev_path_point_right.data.clear();
     RCLCPP_INFO(this->get_logger(), "_Received_path_right: %d", _Received_path_right);
-    RCLCPP_INFO(this->get_logger(), "_path_point_number_right: %d", _path_point_number_right);
+    RCLCPP_INFO(this->get_logger(), "_path_point_number_right: %zu", _path_point_number_right);
 }
 
 //车辆启动，暂停

@@ -8,3 +8,4 @@ navigation/vehicle_navigation <- /home/lyrobot004/gtsam_test_ws/src/vehicle_navi
 hardware/ros2plc <- /home/lyrobot004/robot_driver_ws/src/ros2plc
 mapping/parameter_server <- /home/lyrobot004/coverage_ws/src/parameter_server
 mapping/pcd2pgm <- /home/lyrobot004/coverage_ws/src/pcd2pgm
+hardware/hardware_bind_lib <- /home/lyrobot004/gtsam_test_ws/src/hardware_bind_lib
