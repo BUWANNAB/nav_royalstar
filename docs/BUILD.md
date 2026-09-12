@@ -2,19 +2,26 @@
 
 ## System prerequisites
 
-Install ROS 2 Humble Desktop and the package dependencies, then install two upstream libraries which Ubuntu/ROS does not provide for this workspace:
+Install ROS 2 Humble Desktop and the package dependencies. The repository vendors the exact external library sources used by this workspace:
 
 - Livox-SDK2, providing `liblivox_lidar_sdk_shared.so`
 - GTSAM, providing its CMake package and shared libraries
 
-On the target host, run:
+Install the vendored libraries once. `/usr/local` normally requires root:
+
+```bash
+cd ~/blueant_nav_ws
+sudo BLUEANT_BUILD_JOBS=1 ./scripts/install-vendored-dependencies.sh
+```
+
+Then build the ROS workspace:
 
 ```bash
 cd ~/blueant_nav_ws
 source /opt/ros/humble/setup.bash
 rosdep install --from-paths src --ignore-src --skip-keys gtsam -r -y
 ./scripts/check-dependencies.sh
-colcon build --symlink-install
+MAKEFLAGS=-j1 CMAKE_BUILD_PARALLEL_LEVEL=1 colcon build --symlink-install --executor sequential
 source install/setup.bash
 ```
 
