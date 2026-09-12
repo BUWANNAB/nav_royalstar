@@ -1,0 +1,10 @@
+drivers/livox_ros_driver2 <- /home/lyrobot004/lio_sam_test/src/livox_ros_driver2
+mapping/lio_sam <- /home/lyrobot004/lio_sam_test/src/LIO-SAM-MID360
+mapping/build_map_manager <- /home/lyrobot004/lio_sam_test/src/build_map_manager
+localization/ndt_omp_ros2 <- /home/lyrobot004/gtsam_test_ws/src/ndt_omp_ros2
+localization/lidar_localization_ros2 <- /home/lyrobot004/gtsam_test_ws/src/lidar_localization_ros2
+navigation/tf_to_pose <- /home/lyrobot004/gtsam_test_ws/src/tf_to_pose
+navigation/vehicle_navigation <- /home/lyrobot004/gtsam_test_ws/src/vehicle_navigation
+hardware/ros2plc <- /home/lyrobot004/robot_driver_ws/src/ros2plc
+mapping/parameter_server <- /home/lyrobot004/coverage_ws/src/parameter_server
+mapping/pcd2pgm <- /home/lyrobot004/coverage_ws/src/pcd2pgm

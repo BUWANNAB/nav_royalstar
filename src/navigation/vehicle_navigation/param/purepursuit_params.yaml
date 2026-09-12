@@ -1,0 +1,18 @@
+/vehicle_navigation_node:
+  ros__parameters:
+    lookahead_dist: 1.5  #前瞻距离
+    max_velocity: 1.0  #最大速度
+    min_velocity: -1.0  #最小速度
+    xy_goal_tolerance: 0.01  #xy目标点容差
+    xy_middle_tolerance: 0.1
+    yaw_goal_tolerance: 2.0  #yaw目标点容差
+    wheel_base: 1.0  #轴距
+    angular_velocity_limit: 0.5  #角速度限制
+    min_angular_velocity: 0.05  #最小角速度（防止角度差小时自转过慢）
+    proportion: 1.0  #比例系数
+    pose_offset_x_: 0.0
+    pose_offset_y_: 0.0
+    authorized_hardware_id: 'c86dd31a0fc1d8187ebc942407b3dff9'
+    point_stop_duration_sec: 15
+    arm_task_enable: true  # 是否启用机械臂交互（true=到达中间点后发 /arm/task 并停车等待 /arm/done）
+    arm_wait_timeout_sec: 60.0  # 等待机械臂完成超时告警时间（秒），超时保持停车不自动恢复
