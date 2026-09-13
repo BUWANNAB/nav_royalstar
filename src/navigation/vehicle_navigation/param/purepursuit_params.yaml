@@ -13,6 +13,3 @@
     pose_offset_x_: 0.0
     pose_offset_y_: 0.0
     authorized_hardware_id: 'c86dd31a0fc1d8187ebc942407b3dff9'
-    point_stop_duration_sec: 15
-    arm_task_enable: true  # 是否启用机械臂交互（true=到达中间点后发 /arm/task 并停车等待 /arm/done）
-    arm_wait_timeout_sec: 60.0  # 等待机械臂完成超时告警时间（秒），超时保持停车不自动恢复

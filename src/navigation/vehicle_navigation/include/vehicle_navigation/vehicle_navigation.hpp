@@ -59,14 +59,18 @@ private:
     static constexpr std::size_t MAX_PATH_POINTS = 1000;
     static constexpr std::size_t PATH_POINT_FIELDS = 9;
 
+    // 编号与旧版保持一致，上位机按此解析 /vehicle_run_status。
+    // 注意：Preparing / PathReceived 当前未被使用，但必须保留以维持后续值的编号。
     enum RunStatus : uint8_t {
-        Ready = 0,
-        LinearRunning = 1,
-        SpinRunning = 2,
-        Finished = 3,
-        Warning = 4,
-        Paused = 5,
-        Canceled = 6
+        Preparing = 0,      // 正在准备
+        Ready = 1,          // 就绪（可根据需要添加）
+        LinearRunning = 2,  // 正在直线运行
+        SpinRunning = 3,    // 正在自转运行
+        Paused = 4,         // 暂停中
+        Finished = 5,       // 运行完成
+        PathReceived = 6,   // 收到路径
+        Canceled = 7,       // 取消完成
+        Warning = 8         // 警报
     };
 
     enum obstacle_avoidance_mode : uint8_t {
@@ -130,19 +134,6 @@ private:
     void CloseRouteCallback(const std_msgs::msg::UInt8::SharedPtr paraMsg);
     void VchicleSpinCallback(const std_msgs::msg::Float32::SharedPtr paraMsg);
 
-    // 新增：电气柜通信与路径点门动作处理
-    void ElectricBinStateCallback(const std_msgs::msg::UInt8MultiArray::SharedPtr msg);
-    int GetElectricBinActionByIndex(std::size_t path_point_index);
-    bool HandleElectricBinAction(std::size_t path_point_index);
-    void ResetElectricBinState();
-
-    // 新增：机械臂交互（仿照原 ROS 1 TrackedVehicleNavigation 与 web_ctrl_robot 的握手逻辑）
-    void ArmTaskDoneCallback(const std_msgs::msg::UInt32::SharedPtr paraMsg);
-    bool HandleArmTask(std::size_t path_point_index, bool is_final);
-    bool HandleArmWait();
-    double GetArmTaskDurationByIndex(std::size_t path_point_index);
-    void ResetArmTaskState();
-
     // 硬件授权
     std::shared_ptr<hardware_bind_lib::HardwareBinder> hardware_binder_;
 
@@ -155,8 +146,6 @@ private:
     rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr pubCloseRouteFinish;
     rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr pubWarning;
     rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr pubRunStatus;
-    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr pubElectricBinDoorCmd;
-    rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr pubArmTask;
 
     // 订阅器
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr subPoseStamped;
@@ -167,8 +156,6 @@ private:
     rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr subObstacleAvoidance;
     rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr subVehicleRunStar;
     rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr subVehicleSpin;
-    rclcpp::Subscription<std_msgs::msg::UInt8MultiArray>::SharedPtr subElectricBinState;
-    rclcpp::Subscription<std_msgs::msg::UInt32>::SharedPtr subArmDone;
 
     // 定时器
     rclcpp::TimerBase::SharedPtr timer_;
@@ -191,8 +178,6 @@ private:
     float _proportion = 1.0F;
     float _pose_offset_x_ = 0.0F;
     float _pose_offset_y_ = 0.0F;
-    bool _arm_task_enable = false;        // 是否启用机械臂交互
-    double _arm_wait_timeout_sec = 60.0;  // 等待机械臂完成超时告警时间（秒）
 
     // 路径与控制状态
     Posture _curC;
@@ -229,23 +214,6 @@ private:
     float _init_point_speed = 0.0F;
     float _run_mode = 0.0F;
     float _goal_spin_yaw = 0.0F;
-
-    // 新增：电气柜状态。X1/X3 为 0 表示限位触发，timeout 为 true 表示动作超时。
-    uint8_t electric_bin_x1_state_ = 1;
-    uint8_t electric_bin_x3_state_ = 1;
-    bool electric_bin_timeout_ = false;
-
-    // 新增：电气柜动作记忆。
-    // 0=无等待，1=停车等待开门完成，2=停车等待关门完成。
-    int electric_bin_wait_action_ = 0;
-    // -1=没有处理过任何路径点；其他值=已经处理过对应路径点的门动作。
-    int electric_bin_handled_path_index_ = -1;
-
-    // 新增：机械臂交互状态（对应原 ROS 1 版本里的 starcarend 停走门控与 secs22 作业计时）。
-    bool arm_task_waiting_ = false;      // true=已发布任务，正在停车等待完成回执
-    bool arm_task_done_ = false;         // true=已收到 /arm/done
-    int arm_handled_path_index_ = -1;    // 已发布过任务的路径点序号，-1=无
-    rclcpp::Time arm_wait_start_time_;   // 开始等待的时刻（用于作业时长与超时判断）
 };
 
 #endif  // VEHICLE_NAVIGATION__VEHICLE_NAVIGATION_HPP_

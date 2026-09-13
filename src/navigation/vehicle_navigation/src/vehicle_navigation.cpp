@@ -49,8 +49,6 @@ void TrackedVehicleNavigation::declare_parameters() {
     this->declare_parameter("proportion", 1.0);//比例系数
     this->declare_parameter("pose_offset_x_", 0.0);//定位偏移x
     this->declare_parameter("pose_offset_y_", 0.0);//定位偏移y
-    this->declare_parameter("arm_task_enable", false);//是否启用机械臂交互（仿照原 /PerformTasks 握手）
-    this->declare_parameter("arm_wait_timeout_sec", 60.0);//等待机械臂完成超时告警时间（秒）
     
     // 获取参数值
     this->get_parameter("lookahead_dist", _lookahead_dist);
@@ -65,8 +63,6 @@ void TrackedVehicleNavigation::declare_parameters() {
     this->get_parameter("proportion", _proportion);
     this->get_parameter("pose_offset_x_", _pose_offset_x_);
     this->get_parameter("pose_offset_y_", _pose_offset_y_);
-    this->get_parameter("arm_task_enable", _arm_task_enable);
-    this->get_parameter("arm_wait_timeout_sec", _arm_wait_timeout_sec);
 
 }
 
@@ -87,15 +83,6 @@ void TrackedVehicleNavigation::initialize_publishers() {
         "/vehicle_warning", 10);
     pubRunStatus = this->create_publisher<std_msgs::msg::UInt8>(
         "/vehicle_run_status", 10);
-
-    // 新增：导航节点给电气柜节点发送开门/关门命令
-    // pubElectricBinDoorCmd = this->create_publisher<std_msgs::msg::String>(
-    //     "/car_to_bin/door_cmd", 10);
-
-    // 新增：导航节点给机械臂代理发送任务请求（对应原 /PerformTasks）
-    pubArmTask = this->create_publisher<std_msgs::msg::Float32MultiArray>(
-        "/arm/task", 10);
-    
 }
 
 void TrackedVehicleNavigation::initialize_subscribers() {
@@ -118,15 +105,6 @@ void TrackedVehicleNavigation::initialize_subscribers() {
         "vehicle_run_star", 1, std::bind(&TrackedVehicleNavigation::VchicleRunStarCallback, this, _1));
     subVehicleSpin = this->create_subscription<std_msgs::msg::Float32>(
         "spin_action", 1, std::bind(&TrackedVehicleNavigation::VchicleSpinCallback, this, _1));
-
-    // 新增：订阅电气柜综合状态：[x1,x2,x3,y1,y2,timeout]
-    // subElectricBinState = this->create_subscription<std_msgs::msg::UInt8MultiArray>(
-    //     "/bin_to_car/integrated_state", 10,
-    //     std::bind(&TrackedVehicleNavigation::ElectricBinStateCallback, this, _1));
-
-    // 新增：机械臂任务完成回执（对应原 /VehicleStartsRun，类型保持 UInt32 与机械臂代理一致）
-    subArmDone = this->create_subscription<std_msgs::msg::UInt32>(
-        "/arm/done", 1, std::bind(&TrackedVehicleNavigation::ArmTaskDoneCallback, this, _1));
 }
 
 void TrackedVehicleNavigation::timer_callback() {
@@ -148,26 +126,6 @@ void TrackedVehicleNavigation::vehicle_ctrl_callback() {
     std_msgs::msg::UInt8 _xy_yaw_goal_finish;
     std_msgs::msg::UInt32 _path_point_id;   
 
-    // 新增：如果已经处于“停车等门”状态，先处理电气柜逻辑。
-    // 放在位姿不更新判断前，避免车辆停住后因为位姿不变而无法继续检查 X1/X3。
-    // if(electric_bin_wait_action_ != 0)
-    // {
-    //     if(HandleElectricBinAction(_path_point_count))
-    //     {
-    //         return;
-    //     }
-    // }
-
-    // 新增：如果已经处于“停车等机械臂”状态，先处理完成回执。
-    // 同样放在位姿不更新判断前，避免车辆停住后无法继续检查 /arm/done。
-    if(arm_task_waiting_)
-    {
-        if(HandleArmWait())
-        {
-            return;
-        }
-    }
-    
     if( _pose_up_count > 20)
     {
         cmdVelOutput(0.0, 0.0);
@@ -292,23 +250,6 @@ void TrackedVehicleNavigation::vehicle_ctrl_callback() {
         
         if(Ctrldata.run_finish)  //路线切换
         {
-            // 新增：到达下一个路径点时，先处理该点的电气柜动作属性。
-            // 1/2 会停车等待门到位；3/4 只发命令不停车；0 不处理。
-            std::size_t next_path_point_count = _path_point_count + 1;
-            // if(HandleElectricBinAction(next_path_point_count))
-            // {
-            //     return;
-            // }
-
-            // 新增：到达下一个路径点时再处理机械臂任务（仿照原 TrackedVehicleNavigation 与 web_ctrl_robot）。
-            // 中间点：发布 /arm/task 后停车等待 /arm/done；终点：只发任务帧、不等待。
-            bool next_is_final = (_path_point_number > 0) &&
-                                 (next_path_point_count >= _path_point_number - 1);
-            if(HandleArmTask(next_path_point_count, next_is_final))
-            {
-                return;
-            }
-
             _path_point_count ++;  //路段指针加一
             _run_mode_switch = false;  //追踪中模式切换，自转标志恢复
             
@@ -613,286 +554,12 @@ void TrackedVehicleNavigation::PoseStampedCallback(const geometry_msgs::msg::Pos
     }
 }
 
-// 电气柜状态回调：电气柜节点固定发布 [x1,x2,x3,y1,y2,timeout]
-// void TrackedVehicleNavigation::ElectricBinStateCallback(const std_msgs::msg::UInt8MultiArray::SharedPtr msg)
-// {
-//     // 导航只需要 X1、X3 和 timeout。
-//     electric_bin_x1_state_ = msg->data[0];       // X1：舱门全开到位，0=触发
-//     electric_bin_x3_state_ = msg->data[2];       // X3：舱门全关到位，0=触发
-//     electric_bin_timeout_  = (msg->data[5] != 0);// timeout：1=动作超时
-// }
-
-// 读取默认路径中某个路径点的门动作属性。
-// path_point 每个点有 9 个字段，C++ 下标 [8] 表示第 9 个字段。
-// int TrackedVehicleNavigation::GetElectricBinActionByIndex(std::size_t path_point_index)
-// {
-//     return static_cast<int>(_path_point[path_point_index][8]);
-// }
-
-// 取消路线时，清空本次新增的电气柜动作记忆。
-// void TrackedVehicleNavigation::ResetElectricBinState()
-// {
-//     electric_bin_wait_action_ = 0;
-//     electric_bin_handled_path_index_ = -1;
-// }
-
-// 电气柜动作处理函数。
-// 返回 true：当前周期需要停车等待，后面的原导航控制不要继续执行。
-// 返回 false：电气柜不拦截，原导航控制继续执行。
-// bool TrackedVehicleNavigation::HandleElectricBinAction(std::size_t path_point_index)
-// {
-//     // 正在停车等开门：一直停车，直到 X1=0。
-//     if(electric_bin_wait_action_ == 1)
-//     {
-//         cmdVelOutput(0.0, 0.0);
-//         _vehicle_run_status.data = RunStatus::Paused;
-//
-//         if(electric_bin_timeout_)
-//         {
-//             RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
-//                                   "【电气柜】开门动作超时，导航保持停车");
-//             return true;
-//         }
-//
-//         if(electric_bin_x1_state_ == 0)
-//         {
-//             RCLCPP_WARN(this->get_logger(), "【电气柜】开门到位 X1=0，恢复原导航控制");
-//             electric_bin_wait_action_ = 0;
-//             return false;
-//         }
-//
-//         return true;
-//     }
-//
-//     // 正在停车等关门：一直停车，直到 X3=0。
-//     if(electric_bin_wait_action_ == 2)
-//     {
-//         cmdVelOutput(0.0, 0.0);
-//         _vehicle_run_status.data = RunStatus::Paused;
-//
-//         if(electric_bin_timeout_)
-//         {
-//             RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
-//                                   "【电气柜】关门动作超时，导航保持停车");
-//             return true;
-//         }
-//
-//         if(electric_bin_x3_state_ == 0)
-//         {
-//             RCLCPP_WARN(this->get_logger(), "【电气柜】关门到位 X3=0，恢复原导航控制");
-//             electric_bin_wait_action_ = 0;
-//             return false;
-//         }
-//
-//         return true;
-//     }
-//
-//     // 当前路径点已经处理过门动作，不重复发送 open_door / close_door。
-//     if(static_cast<int>(path_point_index) == electric_bin_handled_path_index_)
-//     {
-//         return false;
-//     }
-//
-//     int action = GetElectricBinActionByIndex(path_point_index);
-//     if(action == 0)
-//     {
-//         return false;
-//     }
-//
-//     electric_bin_handled_path_index_ = static_cast<int>(path_point_index);
-//
-//     // 1：停车开门。若 X1 已经到位，就不需要再停车等待。
-//     if(action == 1)
-//     {
-//         if(!electric_bin_timeout_ && electric_bin_x1_state_ == 0)
-//         {
-//             RCLCPP_WARN(this->get_logger(), "【电气柜】开门已到位 X1=0，继续行驶");
-//             return false;
-//         }
-//
-//         std_msgs::msg::String cmd_msg;
-//         cmd_msg.data = "open_door";
-//         pubElectricBinDoorCmd->publish(cmd_msg);
-//
-//         electric_bin_wait_action_ = 1;
-//         cmdVelOutput(0.0, 0.0);
-//         _vehicle_run_status.data = RunStatus::Paused;
-//         RCLCPP_WARN(this->get_logger(), "【电气柜】停车开门：point_index=%zu，等待 X1=0", path_point_index);
-//         return true;
-//     }
-//
-//     // 2：停车关门。若 X3 已经到位，就不需要再停车等待。
-//     if(action == 2)
-//     {
-//         if(!electric_bin_timeout_ && electric_bin_x3_state_ == 0)
-//         {
-//             RCLCPP_WARN(this->get_logger(), "【电气柜】关门已到位 X3=0，继续行驶");
-//             return false;
-//         }
-//
-//         std_msgs::msg::String cmd_msg;
-//         cmd_msg.data = "close_door";
-//         pubElectricBinDoorCmd->publish(cmd_msg);
-//
-//         electric_bin_wait_action_ = 2;
-//         cmdVelOutput(0.0, 0.0);
-//         _vehicle_run_status.data = RunStatus::Paused;
-//         RCLCPP_WARN(this->get_logger(), "【电气柜】停车关门：point_index=%zu，等待 X3=0", path_point_index);
-//         return true;
-//     }
-//
-//     // 3：不停车开门，只发一次命令，原导航继续。
-//     if(action == 3)
-//     {
-//         std_msgs::msg::String cmd_msg;
-//         cmd_msg.data = "open_door";
-//         pubElectricBinDoorCmd->publish(cmd_msg);
-//         RCLCPP_WARN(this->get_logger(), "【电气柜】不停车开门：point_index=%zu", path_point_index);
-//         return false;
-//     }
-//
-//     // 4：不停车关门，只发一次命令，原导航继续。
-//     if(action == 4)
-//     {
-//         std_msgs::msg::String cmd_msg;
-//         cmd_msg.data = "close_door";
-//         pubElectricBinDoorCmd->publish(cmd_msg);
-//         RCLCPP_WARN(this->get_logger(), "【电气柜】不停车关门：point_index=%zu", path_point_index);
-//         return false;
-//     }
-//
-//     return false;
-// }
-
-// 机械臂交互处理（仿照原 ROS 1 TrackedVehicleNavigation 与 web_ctrl_robot 的握手逻辑）。
-// 到达路径点时调用：
-//   1) 首次到达：发布 /arm/task（工位号=字段[3]，作业时长=字段[8]，末位为终点标志）
-//   2) 中间点：置等待标志并返回 true，当前周期停车等待 /arm/done
-//   3) 终点：只发任务帧、不等待回执，返回 false（与原系统一致）
-//   4) 该点已发布过任务：返回 false，直接放行
-bool TrackedVehicleNavigation::HandleArmTask(std::size_t path_point_index, bool is_final)
-{
-    if(!_arm_task_enable)
-    {
-        return false;
-    }
-
-    // 安全兜底：处于等待态时不应重复发布任务
-    if(arm_task_waiting_)
-    {
-        cmdVelOutput(0.0, 0.0);
-        return true;
-    }
-
-    if(static_cast<int>(path_point_index) == arm_handled_path_index_)
-    {
-        return false;
-    }
-
-    arm_handled_path_index_ = static_cast<int>(path_point_index);
-
-    // 仿照原 /PerformTasks：[工位号, 作业时长(秒), 0=中间点/1=终点]
-    std_msgs::msg::Float32MultiArray task_msg;
-    task_msg.data.push_back(static_cast<float>(_path_point[path_point_index][3]));
-    task_msg.data.push_back(static_cast<float>(_path_point[path_point_index][8]));
-    task_msg.data.push_back(is_final ? 1.0F : 0.0F);
-    pubArmTask->publish(task_msg);
-
-    RCLCPP_WARN(this->get_logger(),
-                "【机械臂】发布任务 point_index=%zu 工位号=%.0f 作业时长=%.1f s 终点=%d",
-                path_point_index, _path_point[path_point_index][3],
-                _path_point[path_point_index][8], is_final ? 1 : 0);
-
-    if(is_final)
-    {
-        // 与原系统一致：终点任务帧只通知机械臂执行，不等待完成回执。
-        return false;
-    }
-
-    arm_task_done_ = false;
-    arm_task_waiting_ = true;
-    arm_wait_start_time_ = this->now();
-
-    cmdVelOutput(0.0, 0.0);
-    _vehicle_run_status.data = RunStatus::Paused;
-    return true;
-}
-
-// 等待机械臂完成（在 vehicle_ctrl_callback 顶部、位姿不更新判断之前调用）。
-// 返回 true：仍在等待，当前周期不要继续原导航控制。
-// 返回 false：任务已完成（收到 /arm/done 且满足作业时长），放行。
-bool TrackedVehicleNavigation::HandleArmWait()
-{
-    cmdVelOutput(0.0, 0.0);
-    _vehicle_run_status.data = RunStatus::Paused;
-
-    double waited = (this->now() - arm_wait_start_time_).seconds();
-    double task_duration = 0.0;
-    if(arm_handled_path_index_ >= 0)
-    {
-        task_duration = GetArmTaskDurationByIndex(static_cast<std::size_t>(arm_handled_path_index_));
-    }
-
-    // 仿照电气柜逻辑：超时只做周期告警，保持停车，不自动恢复行驶。
-    if(waited > _arm_wait_timeout_sec)
-    {
-        RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
-                              "【机械臂】等待任务完成超时(%.1f s > %.1f s)，保持停车（point_index=%d）",
-                              waited, _arm_wait_timeout_sec, arm_handled_path_index_);
-    }
-
-    if(arm_task_done_ && waited >= task_duration)
-    {
-        RCLCPP_WARN(this->get_logger(),
-                    "【机械臂】任务完成：point_index=%d，耗时 %.1f s，恢复原导航控制",
-                    arm_handled_path_index_, waited);
-        arm_task_waiting_ = false;
-        arm_task_done_ = false;
-        return false;
-    }
-
-    return true;
-}
-
-// 读取路径点的机械臂作业时长（第 9 个字段，C++ 下标 [8]，与 ROS 1 原 /PerformTasks 的 data[1] 一致）。
-double TrackedVehicleNavigation::GetArmTaskDurationByIndex(std::size_t path_point_index)
-{
-    if(path_point_index >= MAX_PATH_POINTS)
-    {
-        return 0.0;
-    }
-    return _path_point[path_point_index][8];
-}
-
-// 机械臂完成回执回调（对应原 /VehicleStartsRun）
-void TrackedVehicleNavigation::ArmTaskDoneCallback(const std_msgs::msg::UInt32::SharedPtr paraMsg)
-{
-    // 只在等待任务时接受回执，避免迟到的历史回执提前放行。
-    if(arm_task_waiting_ && paraMsg->data != 0)
-    {
-        arm_task_done_ = true;
-        RCLCPP_WARN(this->get_logger(), "【机械臂】收到完成回执 /arm/done（point_index=%d）",
-                    arm_handled_path_index_);
-    }
-}
-
-// 取消路线 / 新路径下发时清空机械臂任务记忆。
-void TrackedVehicleNavigation::ResetArmTaskState()
-{
-    arm_task_waiting_ = false;
-    arm_task_done_ = false;
-    arm_handled_path_index_ = -1;
-}
-
 // 其他回调函数实现，获取路径信息
 void TrackedVehicleNavigation::PathPointCallback(const std_msgs::msg::Float64MultiArray::SharedPtr paraMsg) {
     _rev_path_point.data = paraMsg->data;
     _path_point_number  = paraMsg->data.size() / 9;
     _Received_path   = true;
     _path_point_count  = 0;
-
-    // 新增：新路径下发时清空机械臂任务记忆，避免沿用上一轮的点位状态
-    ResetArmTaskState();
     
     //路径点一维数组转化为二维数组
     for(size_t i = 0; i < _path_point_number; i++) 
@@ -995,12 +662,6 @@ void TrackedVehicleNavigation::CloseRouteCallback(const std_msgs::msg::UInt8::Sh
     _run_vehicle = 0;
     _obstacle_avoidance = 0;
     _spin_vehicle_flag = false;
-
-    // 新增：取消路线时清空电气柜等待状态和已处理路径点编号
-    // ResetElectricBinState();
-
-    // 新增：取消路线时同时清空机械臂任务状态
-    ResetArmTaskState();
 
     for(size_t i = 0; i < _path_point_number; i++) 
     {
