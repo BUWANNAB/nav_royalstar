@@ -1,0 +1,165 @@
+# parameter_metadata.yaml
+parameters:
+  # --- 定位与姿态 (gnss_converter) ---
+  - name: "ref_latitude"
+    type: "double"
+    default: 34.9717758
+  - name: "ref_longitude"
+    type: "double"
+    default: 118.4472284
+  - name: "ref_height"
+    type: "double"
+    default: 63.9963
+  - name: "gnss_offset_x"
+    type: "double"
+    default: 0.38
+  - name: "gnss_offset_y"
+    type: "double"
+    default: -0.45
+
+  # --- 定位与姿态 (lidar_localization) ---
+  - name: "map_path"
+    type: "string"
+    default: "/home/lyjqr/gtsam_test_ws/GlobalMap.pcd"
+  - name: "voxel_leaf_size"
+    type: "double"
+    default: 0.5
+  - name: "scan_max_range"
+    type: "double"
+    default: 30.0
+  - name: "scan_min_range"
+    type: "double"
+    default: 1.0
+
+  # --- 定位与姿态 (tf_to_pose_node) ---
+  - name: "target_frame"
+    type: "string"
+    default: "map"
+  - name: "source_frame"
+    type: "string"
+    default: "fusion_link"
+  - name: "publish_rate"
+    type: "double"
+    default: 50.0
+
+  # --- 导航与控制 (vehicle_navigation) ---
+  - name: "lookahead_dist"
+    type: "double"
+    default: 1.0
+  - name: "max_velocity"
+    type: "double"
+    default: 1.0
+  - name: "min_velocity"
+    type: "double"
+    default: 1.0
+  - name: "xy_goal_tolerance"
+    type: "double"
+    default: 0.05
+  - name: "xy_middle_tolerance"
+    type: "double"
+    default: 0.2
+  - name: "yaw_goal_tolerance"
+    type: "double"
+    default: 5.0
+  - name: "wheel_base"
+    type: "double"
+    default: 1.0
+  - name: "angular_velocity_limit"
+    type: "double"
+    default: 0.25
+  - name: "proportion"
+    type: "double"
+    default: 1.0
+  - name: "authorized_hardware_id"
+    type: "string"
+    default: ".da28aa1f977f245db8d2bad7a423338a"
+
+  # --- 感知与避障 (obstacle_detector) ---
+  - name: "scan_topic"
+    type: "string"
+    default: "scan_se"
+  - name: "robot_frame"
+    type: "string"
+    default: "laser_se"
+  - name: "map_frame"
+    type: "string"
+    default: "map"
+  - name: "slow_zone1_min"
+    type: "double"
+    default: 1.5
+  - name: "slow_zone1_max"
+    type: "double"
+    default: 2.0
+  - name: "slow_zone2_min"
+    type: "double"
+    default: 1.0
+  - name: "slow_zone2_max"
+    type: "double"
+    default: 1.5
+  - name: "stop_zone_max"
+    type: "double"
+    default: 1.0
+  - name: "main_lane_width"
+    type: "double"
+    default: 1.2
+  - name: "side_lane_width"
+    type: "double"
+    default: 0.0  
+  - name: "lane_detect_length"
+    type: "double"
+    default: 0.6
+  - name: "min_points_threshold"
+    type: "int"
+    default: 6
+  - name: "right_turn_distance"
+    type: "double"
+    default: 80.0
+  - name: "left_turn_distance"
+    type: "double"
+    default: 80.0
+
+  # --- 硬件驱动 (modbus_audio_driver) ---
+  - name: "port"
+    type: "string"
+    default: "/dev/ttys5"
+  - name: "baudrate"
+    type: "int"
+    default: 9600
+  - name: "slave_id"
+    type: "int"
+    default: 1  # Excel为空，需确认实际ID
+
+  # --- 通信与数据存储 (agv_mqtt_bridge) ---
+  - name: "mqtt_broker"
+    type: "string"
+    default: "" # 需配置
+  - name: "agv_id"
+    type: "string"
+    default: "1"
+  - name: "mqtt_username"
+    type: "string"
+    default: ""
+  - name: "mqtt_password"
+    type: "string"
+    default: ""
+  - name: "status_report_interval"
+    type: "double"
+    default: 1.0 
+  - name: "max_retry_attempts"
+    type: "int"   
+    default: 3
+  - name: "retry_delay_seconds"
+    type: "double"
+    default: 1.0
+  - name: "db_host"
+    type: "string"
+    default: "localhost"
+  - name: "db_user"
+    type: "string"
+    default: "root"
+  - name: "db_password"
+    type: "string"
+    default: "root"
+  - name: "db_name"
+    type: "string"
+    default: "db_ant"

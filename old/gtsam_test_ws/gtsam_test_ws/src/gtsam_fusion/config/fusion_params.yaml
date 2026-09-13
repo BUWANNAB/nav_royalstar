@@ -1,0 +1,15 @@
+/gtsam_fusion_node:
+  ros__parameters:
+    gnss_topic: "odometry_gps"
+    lidar_topic: "pcl_pose" 
+    output_topic: "/fused_pose"
+    path_topic: "/fused_path"
+    imu_topic: "/imu/data"  # 预留IMU接口
+    gnss_noise_sigma: 1.0
+    lidar_noise_sigma: 0.1
+    odom_noise_sigma: 0.5
+    gnss_sigma_model: "sigma"  # 协方差模型，可选"sigma"或"type"
+    initpose_enabled: 0.5  # 是否使用初始位姿作为初始值
+    fitness_score_threshold: 2.0  # 最佳匹配得分阈值
+    main_location: "gnss+lidar"  # 主地点名称，可选"gnss"或"lidar"或"gnss+lidar"
+    
