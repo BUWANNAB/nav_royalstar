@@ -1,0 +1,222 @@
+/* 数据下载页样式：沿用原水质检测页的扁平风格，适配 Bootstrap 5 */
+
+body {
+  background: #f4f5f7;
+  padding: 12px;
+  font-family: "Microsoft YaHei", "Titillium Web", sans-serif;
+  color: #333;
+}
+
+.wdt-page {
+  max-width: 1100px;
+}
+
+/* 功能面板：白底 + 细边框，扁平，无阴影 */
+.panel {
+  background: #fff;
+  border: 1px solid #dfe2e8;
+  border-radius: 3px;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+}
+
+.panel-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+  border-left: 3px solid #3f51b5;
+  padding-left: 8px;
+  margin-bottom: 10px;
+}
+
+.panel-body {
+  padding: 0 2px;
+}
+
+/* 字段行 */
+.field-row {
+  margin: 8px 0;
+  font-size: 13px;
+}
+
+.field-row:first-child {
+  margin-top: 0;
+}
+
+.field-label {
+  color: #666;
+  margin-bottom: 6px;
+}
+
+.btn {
+  border-radius: 3px;
+  font-size: 13px;
+}
+
+.btn + .btn {
+  margin-left: 6px;
+}
+
+.btn-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* 覆盖 Bootstrap 的 .btn + .btn，避免与 flex gap 叠加出过大间距 */
+.btn-row .btn + .btn {
+  margin-left: 0;
+}
+
+.btn-row .dropdown {
+  margin-left: 6px;
+}
+
+.radio-inline {
+  margin-right: 14px;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+/* 目录浏览框 */
+.dir-wrap {
+  border-top: 1px dashed #e2e5ea;
+  padding-top: 8px;
+}
+
+.dir-box {
+  border: 1px solid #d7dae0;
+  background: #fafafa;
+  border-radius: 3px;
+  padding: 4px;
+  max-height: 190px;
+  min-height: 50px;
+  overflow-y: auto;
+  margin-top: 8px;
+}
+
+.dir-item,
+.file-item {
+  padding: 4px 8px;
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.dir-item:hover {
+  background: #e3e8f7;
+}
+
+.file-item:hover {
+  background: #e2f2e3;
+}
+
+.file-item.selected {
+  background: #c9e6cb;
+  font-weight: 700;
+}
+
+.dir-empty {
+  color: #999;
+  font-size: 12px;
+  padding: 6px 8px;
+}
+
+.dir-files-title {
+  font-size: 12px;
+  color: #888;
+  padding: 8px 8px 2px;
+  border-top: 1px dashed #ccc;
+  margin-top: 4px;
+}
+
+/* 工具行 */
+.tool-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.tool-row .form-control-sm {
+  flex: 1;
+  min-width: 160px;
+}
+
+.tool-row .form-control-sm.flex-fixed {
+  flex: 0 0 240px;
+}
+
+.tool-row label {
+  font-size: 13px;
+  color: #666;
+  margin: 0;
+  white-space: nowrap;
+}
+
+/* 文件选择框 */
+.file-pick {
+  display: inline-block;
+}
+
+.file-pick input[type="file"] {
+  display: none;
+}
+
+.file-pick-label {
+  display: inline-block;
+  border: 1px solid #c5cbe8;
+  background: #fbfbff;
+  border-radius: 3px;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: #3f51b5;
+  cursor: pointer;
+  margin: 0;
+}
+
+.file-pick-label:hover {
+  background: #3f51b5;
+  color: #fff;
+}
+
+.file-picked {
+  font-size: 12px;
+  color: #666;
+  margin-left: 8px;
+}
+
+/* 提示与警告 */
+.hint {
+  color: #7a7f87;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.hint code {
+  color: #3f51b5;
+  background: #f2f4fb;
+  padding: 0 3px;
+  border-radius: 2px;
+}
+
+.warn {
+  color: #8a6d3b;
+  background: #fcf8e3;
+  border: 1px solid #faebcc;
+  border-radius: 3px;
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* 执行中状态 */
+.btn[disabled] {
+  cursor: not-allowed;
+  opacity: .65;
+}

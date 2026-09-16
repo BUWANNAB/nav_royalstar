@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ant.robot.mapper.FilesMapper">
+
+    <resultMap id="BaseResultMap" type="com.ant.robot.model.domain.Files">
+            <id property="id" column="id" jdbcType="CHAR"/>
+            <result property="md5" column="md5" jdbcType="CHAR"/>
+            <result property="filePath" column="filePath" jdbcType="VARCHAR"/>
+            <result property="fileName" column="fileName" jdbcType="VARCHAR"/>
+            <result property="fileSize" column="fileSize" jdbcType="CHAR"/>
+            <result property="suffix" column="suffix" jdbcType="VARCHAR"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,md5,filePath,
+        fileName,fileSize,suffix,
+        createTime,updateTime,isDelete
+    </sql>
+
+    <update id="updateBatchByIdZero">
+        update t_files set isDelete = 0 where id in
+        <foreach collection="list" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+    </update>
+</mapper>

@@ -1,6 +1,0 @@
-float32 body_north_vel
-float32 body_east_vel
-float32 body_up_vel
-float32 body_north_vel_vari
-float32 body_east_vel_vari
-float32 body_up_vel_vari

@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# =============================================================================
+# postinst — robot-system 安装后脚本
+#
+# 1) 初始化数据库 db_ant（**仅库不存在时导入**；升级/重装绝不覆盖现场数据）
+# 2) 补建运行期目录与权限
+#
+# 参照 IPC_Web_service_deb/tools/web_deb_packaging/scripts/postinst
+# =============================================================================
+set -e
+
+WEB_DIR="/opt/blueant/robot"
+DB_NAME="db_ant"
+
+# ---------- 1. 数据库初始化（仅库不存在时导入，升级零覆盖） ----------
+if command -v mysql >/dev/null 2>&1; then
+  if mysql -uroot -proot -N -e \
+      "SELECT SCHEMA_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME='${DB_NAME}';" \
+      2>/dev/null | grep -q "${DB_NAME}"; then
+    echo "  [数据库] ${DB_NAME} 已存在，跳过导入（升级不覆盖任何数据）"
+  else
+    if [ -f "${WEB_DIR}/db/schema.sql" ]; then
+      # 允许 root 无密码或 root/root 两种情形
+      if mysql -uroot < "${WEB_DIR}/db/schema.sql" 2>/dev/null \
+        || mysql -uroot -proot < "${WEB_DIR}/db/schema.sql" 2>/dev/null; then
+        echo "  [数据库] ${DB_NAME} 结构导入完成"
+      else
+        echo "  [警告] 结构导入失败（请确认数据库已启动且 root 可登录）"
+      fi
+    else
+      echo "  [警告] 未找到 ${WEB_DIR}/db/schema.sql，跳过数据库初始化"
+    fi
+  fi
+else
+  echo "  [警告] 未找到 mysql 客户端，跳过数据库初始化（请先安装 mysql-server）"
+  echo "         业务服务启动后需要本机 ${DB_NAME} 数据库。"
+fi
+
+# ---------- 2. 运行期目录与权限 ----------
+mkdir -p "${WEB_DIR}/logs" "${WEB_DIR}/run"
+chmod 777 "${WEB_DIR}/logs" 2>/dev/null || true
+chmod 777 "${WEB_DIR}/run" 2>/dev/null || true
+chmod -R a+rX "${WEB_DIR}" 2>/dev/null || true
+chmod 755 "${WEB_DIR}/start.sh" 2>/dev/null || true
+chmod 755 "${WEB_DIR}/stop.sh" 2>/dev/null || true
+
+# ---------- 3. 前置环境提醒（不阻断安装） ----------
+if [ ! -r /opt/ros/humble/setup.bash ]; then
+  echo "  [警告] 缺少 /opt/ros/humble/setup.bash"
+  echo "         业务服务依赖 ROS2 的 rcljava 原生库，启动会失败，请先安装 ROS2 Humble。"
+fi
+if [ ! -d "$HOME/ros2_java_ws/install" ]; then
+  echo "  [警告] 缺少 ~/ros2_java_ws/install（rcljava 工作空间）"
+  echo "         请先构建并安装 rcljava 工作空间。"
+fi
+
+exit 0

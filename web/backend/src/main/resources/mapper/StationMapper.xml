@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ant.robot.mapper.StationMapper">
+
+    <resultMap id="BaseResultMap" type="com.ant.robot.model.domain.Station">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="stationName" column="stationName" jdbcType="VARCHAR"/>
+            <result property="stationCode" column="stationCode" jdbcType="VARCHAR"/>
+            <result property="positionX" column="positionX" jdbcType="VARCHAR"/>
+            <result property="positionY" column="positionY" jdbcType="VARCHAR"/>
+            <result property="positionZ" column="positionZ" jdbcType="VARCHAR"/>
+            <result property="orientationX" column="orientationX" jdbcType="VARCHAR"/>
+            <result property="orientationY" column="orientationY" jdbcType="VARCHAR"/>
+            <result property="orientationZ" column="orientationZ" jdbcType="VARCHAR"/>
+            <result property="orientationW" column="orientationW" jdbcType="VARCHAR"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,stationName,stationCode,
+        positionX,positionY,positionZ,
+        orientationX,orientationY,orientationZ,
+        orientationW,createTime,updateTime,
+        isDelete
+    </sql>
+</mapper>

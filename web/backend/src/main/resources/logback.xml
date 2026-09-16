@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <property name="LOG_FILE_PATH" value="logs/robot_system.log" />
+    <property name="POSITION_LOG_FILE_PATH" value="logs/position_data.log" />
+
+    <!-- 主日志文件appender -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_FILE_PATH}</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_FILE_PATH}.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 位置数据专用appender -->
+    <appender name="POSITION_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${POSITION_LOG_FILE_PATH}</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${POSITION_LOG_FILE_PATH}.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <!-- 简化格式，便于分析 -->
+            <pattern>%date|%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="info">
+        <appender-ref ref="FILE" />
+    </root>
+
+    <!-- MyBatis-Plus 日志配置 -->
+    <logger name="com.baomidou.mybatisplus" level="debug" additivity="false">
+        <appender-ref ref="FILE" />
+    </logger>
+
+    <!-- 特定类的位置数据日志配置 -->
+    <logger name="com.ant.robot.controller.RevdataController" level="debug" additivity="false">
+        <appender-ref ref="POSITION_FILE" />
+    </logger>
+</configuration>

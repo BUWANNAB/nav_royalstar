@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ant.robot.mapper.LogMapper">
+
+    <resultMap id="BaseResultMap" type="com.ant.robot.model.domain.Log">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="title" column="title" jdbcType="VARCHAR"/>
+            <result property="content" column="content" jdbcType="VARCHAR"/>
+            <result property="method" column="method" jdbcType="VARCHAR"/>
+            <result property="requestMethod" column="requestMethod" jdbcType="VARCHAR"/>
+            <result property="userAccount" column="userAccount" jdbcType="VARCHAR"/>
+            <result property="requestUrl" column="requestUrl" jdbcType="VARCHAR"/>
+            <result property="ip" column="ip" jdbcType="VARCHAR"/>
+            <result property="requestParam" column="requestParam" jdbcType="VARCHAR"/>
+            <result property="reponseResult" column="reponseResult" jdbcType="VARCHAR"/>
+            <result property="status" column="status" jdbcType="INTEGER"/>
+            <result property="errorMsg" column="errorMsg" jdbcType="VARCHAR"/>
+            <result property="operTime" column="operTime" jdbcType="TIMESTAMP"/>
+            <result property="holdTime" column="holdTime" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,title,content,
+        method,requestMethod,userAccount,
+        requestUrl,ip,requestParam,
+        reponseResult,status,errorMsg,
+        operTime,holdTime
+    </sql>
+</mapper>

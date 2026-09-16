@@ -1,0 +1,103 @@
+spring:
+  profiles:
+    active: dev
+  application:
+    name: robot_system
+  web:
+    resources:
+      # 前端静态资源已物理外置（P0）：默认取部署根 frontend/（源码模式）；
+      # deb 模式由 start.sh 导出 ROBOT_WEB_UI_DIR=$APP_DIR/web-ui
+      static-locations: file:${ROBOT_WEB_UI_DIR:${user.dir}/../frontend}/
+  servlet:
+    multipart:
+      enabled: false
+      max-file-size: 1GB
+      max-request-size: 10GB
+
+  datasource:
+    hikari:
+      max-lifetime: 1800000
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${ROBOT_DB_URL:jdbc:mysql://localhost:3306/db_ant?serverTimezone=Asia/Shanghai}
+    username: ${ROBOT_DB_USERNAME:root}
+    password: ${ROBOT_DB_PASSWORD:}
+
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+server:
+  port: ${ROBOT_WEB_PORT:8088}
+
+robot:
+  browser:
+    auto-open: ${ROBOT_BROWSER_AUTO_OPEN:false}
+  plc:
+    host: ${ROBOT_PLC_HOST:192.168.8.30}
+    port: ${ROBOT_PLC_PORT:502}
+    java-client-enabled: ${ROBOT_JAVA_PLC_ENABLED:false}
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: false
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+  global-config:
+    db-config:
+      logic-not-delete-value: 0
+      logic-delete-value: 1
+      logic-delete-field: isDelete
+    banner: false
+
+file-service:
+  base-path: ${ROBOT_FILES_DIR:${user.dir}/runtime/files}
+
+# 数据下载（数据导出 / 导入 / 目录浏览），对应 DataTransferController
+data-transfer:
+  # mysqldump / mysql 可执行文件。Linux 走 PATH 即可；
+  # Windows 调试需指到 .exe 全路径，例如 D:\mysql-8.0.27-winx64\bin\mysqldump.exe
+  mysqldump-path: ${ROBOT_MYSQLDUMP_PATH:mysqldump}
+  mysql-path: ${ROBOT_MYSQL_PATH:mysql}
+  # 允许浏览的根目录，逗号分隔；留空=不限制（沿用旧 serve.js 行为）。
+  # 现场生产建议收窄，例如 /home/lyagv,/media
+  browse-roots: ${ROBOT_TRANSFER_BROWSE_ROOTS:}
+  # 默认导出目录；留空则按 桌面 / Desktop / 用户主目录 探测
+  default-dir: ${ROBOT_TRANSFER_DIR:}
+  # 日志面板的目录
+  log-dir: ${ROBOT_LOG_DIR:${user.dir}/logs}
+  # 单次 mysqldump / mysql 超时秒数
+  timeout-seconds: 600
+  # 单次导入最大字节数（默认 50MB）
+  max-import-bytes: 52428800
+  # 导入前自动整库带时间戳备份；关闭需自担回滚风险
+  backup-before-import: ${ROBOT_TRANSFER_BACKUP:true}
+
+connection:
+  retry:
+    tcp:
+      max-attempts: 3
+      backoff: 5000
+    modbus:
+      max-attempts: 3
+      backoff: 5000
+    mqtt:
+      max-attempts: 3
+      backoff: 5000
+    ros-websocket:
+      max-attempts: 2
+      backoff: 3000
+
+ros:
+  bridge:
+    url: ${ROBOT_ROSBRIDGE_URL:ws://localhost:9090}
+
+maps:
+  directory: ${ROBOT_STATIC_MAPS_DIR:${user.dir}/runtime/static-maps}
+
+pcd:
+  file:
+    path: ${ROBOT_PCD_DIR:${user.dir}/pcd/}
+
+pgm:
+  root:
+    path: ${ROBOT_MAP_DIR:${user.dir}/maps/}

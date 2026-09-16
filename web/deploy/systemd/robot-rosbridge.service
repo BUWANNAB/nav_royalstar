@@ -1,0 +1,43 @@
+[Unit]
+# =============================================================================
+# robot-rosbridge.service —— rosbridge WebSocket(9090) systemd 单元（模板）
+#
+# 为什么必须有它：Web UI 与 Java 后端都经 9090 访问 ROS——
+#   - 前端 RosManager：ws://<页面主机>:9090（localStorage rosbridgeUrl 可覆盖）
+#   - 后端 application.yml：ROBOT_ROSBRIDGE_URL（默认 ws://localhost:9090）
+# 源码模式（ros2.sh）与 deb 模式均需要本单元（与其他组件不冲突）。
+#
+# 使用（手工启用，不做自动安装）：
+#   1) 安装依赖：sudo apt install ros-humble-rosbridge-suite
+#   2) 把下方 4 处 lyrobot004 改为机器人实际用户名（如 lyrobot012 / lanyi）
+#   3) 建日志目录：sudo mkdir -p /var/log/robot && sudo chown <用户名> /var/log/robot
+#   4) sudo cp robot-rosbridge.service /etc/systemd/system/
+#      sudo systemctl daemon-reload
+#      sudo systemctl enable --now robot-rosbridge
+#
+# 历史说明：曾随 boot-branding 入仓（2026-09-07，commit 6942148），后随品牌组件移出
+# （2026-09-12，commit a2d5cb2）；此处为可移植回归版（2026-09-16 已与 boot-branding 实物副本
+# 逐行核对一致，仅 Description 多注了端口）。
+# 若机器上有 boot-branding，可直接：sudo bash install.sh --user <用户名> --with-robot-services
+# （会安装并 enable robot-rosbridge / robot-system 两个单元）；否则按上方四步手工启用。
+# =============================================================================
+Description=Robot ROS Bridge WebSocket (port 9090)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=lyrobot004
+Group=lyrobot004
+WorkingDirectory=/home/lyrobot004
+Environment="HOME=/home/lyrobot004"
+Environment="ROS_DOMAIN_ID=0"
+# 若 ROS 版本或安装路径不同，修改下一行的 /opt/ros/humble/setup.bash
+ExecStart=/bin/bash -lc 'source /opt/ros/humble/setup.bash && ros2 launch rosbridge_server rosbridge_websocket_launch.xml'
+Restart=on-failure
+RestartSec=5
+StandardOutput=append:/var/log/robot/rosbridge.log
+StandardError=append:/var/log/robot/rosbridge.log
+
+[Install]
+WantedBy=multi-user.target

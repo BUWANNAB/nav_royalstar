@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ant.robot.mapper.RouteDetailMapper">
+
+    <resultMap id="BaseResultMap" type="com.ant.robot.model.domain.RouteDetail">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="routeId" column="routeId" jdbcType="BIGINT"/>
+            <result property="stationId" column="stationId" jdbcType="BIGINT"/>
+            <result property="speed" column="speed" jdbcType="VARCHAR"/>
+            <result property="direction" column="direction" jdbcType="VARCHAR"/>
+            <result property="stopTime" column="stopTime" jdbcType="VARCHAR"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,routeId,stationId,
+        speed,direction,stopTime,
+        createTime,updateTime,isDelete
+    </sql>
+</mapper>

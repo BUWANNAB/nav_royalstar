@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数据下载</title>
+
+  <!-- Bootstrap 5（与现场较新的模块页保持一致，避免 BS4/BS5 混用） -->
+  <link rel="stylesheet" href="../../../../libs/bootstrap/css5.0/bootstrap.min.css">
+  <link rel="stylesheet" href="../../../../libs/bootstrap/css/bootstrap-icons.css">
+  <link rel="stylesheet" href="./css/index.css">
+</head>
+
+<body>
+<div class="wdt-page">
+
+  <!-- ① 数据导出 -->
+  <div class="panel">
+    <div class="panel-title">数据导出</div>
+    <div class="panel-body">
+      <div class="field-row">
+        <div class="field-label">导出对象</div>
+        <div class="btn-row">
+          <button type="button" class="btn btn-info" data-export="sensorSql">导出水质数据 SQL</button>
+          <button type="button" class="btn btn-info" data-export="sensorCsv">导出水质数据 CSV</button>
+          <button type="button" class="btn btn-info" data-export="stationSql">导出站点 SQL</button>
+          <button type="button" class="btn btn-info" data-export="routeSql">导出路线 SQL</button>
+          <button type="button" class="btn btn-info" data-export="stationRouteSql">导出站点/路线 SQL</button>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-label">导出方式</div>
+        <label class="radio-inline">
+          <input type="radio" name="exportMode" value="download" checked> 下载到浏览器
+        </label>
+        <label class="radio-inline">
+          <input type="radio" name="exportMode" value="disk"> 导出到工控机磁盘
+        </label>
+      </div>
+
+      <!-- 目录浏览器（磁盘导出模式） -->
+      <div id="exportDirBrowser" class="dir-wrap" style="display:none;">
+        <div class="tool-row">
+          <button type="button" class="btn btn-sm btn-secondary" data-dir-up="export">上一级</button>
+          <input type="text" id="exportDirPath" class="form-control form-control-sm" placeholder="目录路径">
+          <button type="button" class="btn btn-sm btn-secondary" data-dir-go="export">前往</button>
+        </div>
+        <div class="dir-box" id="exportDirList"></div>
+        <div class="tool-row">
+          <input type="text" id="newDirName" class="form-control form-control-sm flex-fixed" placeholder="新建文件夹名">
+          <button type="button" class="btn btn-sm btn-secondary" id="mkdirBtn">新建文件夹</button>
+        </div>
+        <div class="tool-row">
+          <label for="exportFilename">导出文件名</label>
+          <input type="text" id="exportFilename" class="form-control form-control-sm flex-fixed"
+                 placeholder="留空自动命名 前缀_时间戳.sql">
+        </div>
+      </div>
+
+      <div class="field-row hint">
+        说明：路线导出包含 <code>t_route</code> 与 <code>t_route_detail</code> 两表；现场站点/路线为结构化字段，
+        与水质检测旧版 <code>tag/data</code> 结构不同。
+      </div>
+    </div>
+  </div>
+
+  <!-- ② 数据导入 -->
+  <div class="panel">
+    <div class="panel-title">数据导入</div>
+    <div class="panel-body">
+      <div class="field-row">
+        <div class="field-label">导入操作（由 SQL 文件内容决定目标表）</div>
+        <div class="btn-row">
+          <button type="button" class="btn btn-success" id="importBtn">执行导入</button>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-label">导入方式</div>
+        <label class="radio-inline">
+          <input type="radio" name="importMode" value="upload" checked> 上传 .sql 文件
+        </label>
+        <label class="radio-inline">
+          <input type="radio" name="importMode" value="disk"> 从工控机磁盘选择
+        </label>
+      </div>
+
+      <!-- 上传模式 -->
+      <div id="importUploadArea" class="tool-row">
+        <span class="file-pick">
+          <label class="file-pick-label" for="importFileInput">选择 .sql 文件</label>
+          <input type="file" id="importFileInput" accept=".sql">
+        </span>
+        <span class="file-picked" id="importFileName">未选择文件</span>
+      </div>
+
+      <!-- 磁盘模式 -->
+      <div id="importDirBrowser" style="display:none;">
+        <div class="tool-row">
+          <button type="button" class="btn btn-sm btn-secondary" data-dir-up="import">上一级</button>
+          <input type="text" id="importDirPath" class="form-control form-control-sm" placeholder="目录路径">
+          <button type="button" class="btn btn-sm btn-secondary" data-dir-go="import">前往</button>
+        </div>
+        <div class="dir-box" id="importDirList"></div>
+      </div>
+
+      <div class="field-row">
+        <label class="radio-inline">
+          <input type="checkbox" id="allowDrop"> 允许覆盖现有表（放行脚本中的 DROP / TRUNCATE）
+        </label>
+      </div>
+
+      <div class="field-row warn">
+        导入会直接改动数据库。系统默认在导入前自动做一次整库带时间戳回滚备份，
+        并拦截脚本中的 DROP / TRUNCATE 语句。
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ 日志文件 -->
+  <div class="panel">
+    <div class="panel-title">日志文件</div>
+    <div class="panel-body">
+      <div class="btn-row">
+        <div class="dropdown">
+          <button class="btn btn-secondary dropdown-toggle" type="button"
+                  id="logDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            选择日志文件
+          </button>
+          <ul class="dropdown-menu" id="logMenu" aria-labelledby="logDropdown">
+            <li><span class="dropdown-item-text dir-empty">加载中…</span></li>
+          </ul>
+        </div>
+        <button type="button" class="btn btn-sm btn-secondary" id="logRefreshBtn">刷新列表</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="../../../../libs/jquery-3.1.0.min.js"></script>
+<script src="../../../../libs/bootstrap/js5.0/bootstrap.bundle.min.js"></script>
+<script src="../../../../libs/coco-message.js"></script>
+<script type="module" src="./js/index.js"></script>
+</body>
+
+</html>

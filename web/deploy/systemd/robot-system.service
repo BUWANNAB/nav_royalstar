@@ -1,0 +1,28 @@
+[Unit]
+# =============================================================================
+# robot-system.service —— 业务服务 systemd 单元（模板）
+#
+# 这是示例模板，**不会由 deb 自动安装**（对齐参照项目「postinst 不自动启动服务」的做法）。
+# 需要开机自启时手工启用：
+#   sudo cp robot-system.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now robot-system
+#
+# 注意：本单元管理的是 **deb 打包模式**（/opt/blueant/robot）。
+# 现场若仍使用源码模式（ros2.sh），请不要启用本单元 —— 两者会争夺 8088 端口。
+# rosbridge(9090) 与导航节点由 ROS 端负责，本单元不涉及。
+# =============================================================================
+Description=Rongshida AGV robot business system (Spring Boot, port 8088)
+After=network.target mysql.service mariadb.service
+Wants=mysql.service mariadb.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/opt/blueant/robot/start.sh
+ExecStop=/opt/blueant/robot/stop.sh
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

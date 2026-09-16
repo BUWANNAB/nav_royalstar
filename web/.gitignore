@@ -1,0 +1,34 @@
+# ===== 大文件与构建产物（不上传，不影响本地使用） =====
+# pcd/ maps/ logs/ runtime/：忽略内容、保留 .gitkeep 占位（目录结构随仓库分发）
+pcd/*
+!pcd/.gitkeep
+target/
+*.jar
+logs/*
+!logs/.gitkeep
+runtime/*
+!runtime/*/
+runtime/*/*
+!runtime/*/.gitkeep
+robot*.log
+mvn_build*.log
+robot_system_full.tar.gz
+backend/src/*.zip
+maps/*
+!maps/.gitkeep
+db_ant.sql
+/application.yml
+/deploy/robot.env
+
+# ===== 嵌套 git 仓库 =====
+**/.git/
+
+# ===== deb 打包：构建工作区与产物（不上传） =====
+# 交付包与离线依赖体积大，由 .gitkeep 保留目录占位
+tools/web_deb_packaging/work/
+tools/web_deb_packaging/output/*.deb
+deploy/no_network_packages/*.deb
+
+# ===== 系统/编辑器 =====
+.DS_Store
+Thumbs.db

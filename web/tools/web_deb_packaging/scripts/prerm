@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# =============================================================================
+# prerm — robot-system 卸载前脚本
+#
+# 停止业务服务（**保留数据库与安装目录数据**）
+#
+# 参照 IPC_Web_service_deb/tools/web_deb_packaging/scripts/prerm
+# =============================================================================
+set -e
+
+WEB_DIR="/opt/blueant/robot"
+PID_FILE="${WEB_DIR}/run/robot-system.pid"
+
+if [ -f "$PID_FILE" ]; then
+  pid=$(cat "$PID_FILE" 2>/dev/null || true)
+  if [ -n "$pid" ] && ps -p "$pid" > /dev/null 2>&1; then
+    # 先温和终止，最多等 10 秒，再强杀
+    kill "$pid" 2>/dev/null || true
+    for _ in $(seq 1 10); do
+      ps -p "$pid" > /dev/null 2>&1 || break
+      sleep 1
+    done
+    if ps -p "$pid" > /dev/null 2>&1; then
+      kill -9 "$pid" 2>/dev/null || true
+      echo "  [停止] 业务服务强制结束 (PID: $pid)"
+    else
+      echo "  [停止] 业务服务已停止 (PID: $pid)"
+    fi
+  fi
+  rm -f "$PID_FILE"
+else
+  echo "  [停止] 未找到 PID 文件，跳过（服务可能未在运行）"
+fi
+
+exit 0

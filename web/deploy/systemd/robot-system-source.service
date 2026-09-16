@@ -1,0 +1,41 @@
+[Unit]
+# =============================================================================
+# robot-system-source.service —— 业务服务 systemd 单元（模板，源码模式）
+#
+# 源码模式服务化：ExecStart=deploy/start/run-java.sh（source ROS 环境 → mvn spring-boot:run）。
+# 与 deb 模式模板 robot-system.service（/opt/blueant/robot/start.sh）**二选一**；
+# 与手动入口 deploy/start/ros2.sh 也不可同跑（同一个 8088 端口）。
+#
+# 使用（手工启用，不做自动安装）：
+#   1) 把下方 5 处 lyrobot004 与 /home/lyrobot004/lyagv-base-web 改为实际用户名/部署路径
+#      （仓库目录可为任意路径，与 deploy/ 脚本的可移植契约一致）
+#   2) 建日志目录：sudo mkdir -p /var/log/robot && sudo chown <用户名> /var/log/robot
+#   3) 安装（**目标名统一为 robot-system.service**，与 deb 版同名互斥，防止双开抢占 8088）：
+#      sudo cp robot-system-source.service /etc/systemd/system/robot-system.service
+#      sudo systemctl daemon-reload
+#      sudo systemctl enable --now robot-system
+#   注：robot.env 由 run-java.sh 自行 source（EnvironmentFile 为双保险）。
+#
+# 前置：JDK17 + Maven + ROS2 Humble + ~/ros2_java_ws（run-java.sh 启动时自检，缺一即退出）。
+# 历史：源自 boot-branding 实物单元（现场以 /home/lyrobot004/lyagv-base-web 为部署目录），
+# 2026-09-16 模板化回仓（与实物等价，仅路径/用户名需按机器修改）。
+# =============================================================================
+Description=RobotSystem Java Backend, source mode (port 8088)
+After=network-online.target mysql.service robot-rosbridge.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=lyrobot004
+Group=lyrobot004
+WorkingDirectory=/home/lyrobot004/lyagv-base-web
+Environment="HOME=/home/lyrobot004"
+EnvironmentFile=-/home/lyrobot004/lyagv-base-web/deploy/robot.env
+ExecStart=/home/lyrobot004/lyagv-base-web/deploy/start/run-java.sh
+Restart=on-failure
+RestartSec=8
+StandardOutput=append:/var/log/robot/system.log
+StandardError=append:/var/log/robot/system.log
+
+[Install]
+WantedBy=multi-user.target

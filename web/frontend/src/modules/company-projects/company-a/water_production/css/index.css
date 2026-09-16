@@ -1,0 +1,84 @@
+
+.containers {
+    justify-content: center;
+    width: 100%;
+}
+.row1 {
+    width: 100%;
+    margin-top: 10px;
+}
+.left-row .offset-md-3 {
+    margin-left: 0%;
+}
+.row1 .offset-md-3 {
+    margin: auto;
+}
+.current-message {
+    width: 100%;
+    height: 200px;
+    border: 1px solid red;
+}
+.input-group {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    width: 100%;
+}
+.col-md-6 {
+    width: 77%;
+}
+#filterForm2 .input-group {
+    width: 40%;
+}
+@media (min-width: 768px) {
+    .col-md-3 {
+        flex: 0 0 auto;
+        width: 30%;
+    }
+}
+
+/* 下面是天气预报的样式 */
+.data-card {
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .data-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        .card-body {
+            padding: 8px;
+            text-align: center;
+        }
+        .card-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .card-text {
+            font-size: 1.5rem;
+            color: #555;
+        }
+        .icon-large {
+            font-size: 2.5rem;
+            margin-right: 10px;
+        }
+        .bg-light-blue {
+            background-color: #e6f7ff;
+        }
+        .bg-light-green {
+            background-color: #ebffeb;
+        }
+        .bg-light-yellow {
+            background-color: #fffbe6;
+        }
+        .bg-light-pink {
+            background-color: #ffe6f7;
+        }
+        .bg-light-gray {
+            background-color: #f5f5f5;
+        }
+
