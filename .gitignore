@@ -1,7 +1,15 @@
-# ROS 2 / colcon outputs
-build/
-install/
-log/
+# =============================================================================
+# ROS 2 / colcon 构建产物
+# 只匹配「ROS 工作区」与「仓库根」，避免误伤：
+#   - web/deploy/install/                         （交付安装器 + schema.sql）
+#   - web/frontend/src/tools/roslibjs/build/      （前端必需库 roslib.js）
+# =============================================================================
+/install/
+/build/
+/log/
+blueant_nav_ws/install/
+blueant_nav_ws/build/
+blueant_nav_ws/log/
 
 # Runtime and editor files
 *.log

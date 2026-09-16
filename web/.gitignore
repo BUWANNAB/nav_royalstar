@@ -28,6 +28,7 @@ db_ant.sql
 tools/web_deb_packaging/work/
 tools/web_deb_packaging/output/*.deb
 deploy/no_network_packages/*.deb
+deploy/install/no_network_packages/*.deb
 
 # ===== 系统/编辑器 =====
 .DS_Store

@@ -9,7 +9,7 @@
 | `blueant_nav_ws/` | **唯一的 ROS 2 Humble 导航工作区**：全部导航功能包 + 现场依赖（`third_party/`）+ 构建脚本 + 文档，可整体同步到机器人 `~/blueant_nav_ws` |
 | `web/` | 业务 Web/Java 服务仓库根（独立 Git 子仓库；2026-09-15 结构重构：`backend/` Java 源码、`tools/` 工具与打包、`deploy/` 部署与导航启停脚本，已切换为单一 ws 模式） |
 | `old/`（已删除） | 旧 4 个工作区快照（`lio_sam_test`、`gtsam_test_ws`、`robot_driver_ws`、`coverage_ws`）已于 2026-09-16 移除；如需对照可从 Git 历史恢复（`git restore -- old`） |
-| `docs/` | 方案文档：`SINGLE_WS_PLAN.md`（单一工作区迁移）、`PATH_ALIGNMENT_PLAN.md`（ROS 侧向 Java 前后端路径对齐）、`FRONTEND_BACKEND_ARCHITECTURE.md`（Web 前后端分离架构设计） |
+| `docs/` | 文档：**`NEW_MACHINE_SETUP.md`（新机装机步骤，换机先看这份）**、`SINGLE_WS_PLAN.md`（单一工作区迁移）、`PATH_ALIGNMENT_PLAN.md`（ROS 侧向 Java 前后端路径对齐）、`FRONTEND_BACKEND_ARCHITECTURE.md`（Web 前后端分离架构设计） |
 | `SOURCE_MANIFEST.txt` | 各功能包原始来源记录 |
 
 > 迁移过渡副本（原根目录 `src/`、`scripts/`、`third_party/`、`docs/BUILD.md`）已于 2026-09-15 清除，
