@@ -63,8 +63,8 @@ cd ~/Royalstar
 sudo apt update
 # ROS 2 Humble（若未装，按官方源安装）
 sudo apt install -y ros-humble-ros-base ros-humble-rosbridge-suite
-# 工具链
-sudo apt install -y python3-colcon-common-extensions python3-rosdep \
+# 工具链（python3-vcstool 提供 vcs 命令，rcljava 步骤必需；不随 colcon 一起安装）
+sudo apt install -y python3-colcon-common-extensions python3-rosdep python3-vcstool \
                     git rsync curl unzip
 # 后端（源码模式需要 Maven；deb 模式只需 JRE/JDK17）
 sudo apt install -y openjdk-17-jdk-headless maven mysql-server
@@ -125,6 +125,19 @@ colcon build --symlink-install --packages-up-to rcljava --cmake-args -DBUILD_TES
 # ④ 其余消息包（跳过 test_msgs：其测试依赖不可得）
 colcon build --symlink-install --cmake-args -DBUILD_TESTING=OFF --packages-skip test_msgs
 ```
+
+> **若 `vcs` 命令不存在**（`找不到命令 "vcs"`）：`sudo apt install -y python3-vcstool`。
+> 装不了（无 apt 源）时等价替代——不用 vcs，手工 clone 同样 6 个仓库到 `src/`：
+> ```bash
+> cd ~/ros2_java_ws/src
+> git clone -b humble https://github.com/ros2/common_interfaces.git
+> git clone -b humble https://github.com/ros2/rcl_interfaces.git
+> git clone -b humble https://github.com/ros2/unique_identifier_msgs.git
+> git clone -b humble https://github.com/ros2/rosidl_defaults.git
+> git clone -b main   https://github.com/ros2-java/ament_java.git
+> git clone -b main   https://github.com/ros2-java/ros2_java.git
+> ```
+> 全部需要访问 `github.com`（`vcs import` 同样）。
 
 **验收（7/7 必须全部 OK）**：
 
