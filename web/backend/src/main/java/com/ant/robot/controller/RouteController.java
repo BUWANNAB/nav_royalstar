@@ -806,8 +806,10 @@ RouteController {
             // 获取本地坐标系原点经纬度
             QueryWrapper<Param> paramQueryWrapper = new QueryWrapper<>();
             Param param = paramMapper.selectOne(paramQueryWrapper);
-            double localLat = param != null ? Double.parseDouble(param.getLocal_origin_latitude()) : 0;
-            double localLon = param != null ? Double.parseDouble(param.getLocal_origin_longitude()) : 0;
+            double localLat = param != null && StringUtils.isNotBlank(param.getLocal_origin_latitude())
+                    ? Double.parseDouble(param.getLocal_origin_latitude()) : Double.NaN;
+            double localLon = param != null && StringUtils.isNotBlank(param.getLocal_origin_longitude())
+                    ? Double.parseDouble(param.getLocal_origin_longitude()) : Double.NaN;
 
             // 先处理所有站点的位置信息并计算XY坐标
             for (int i = 0; i < request.getStations().size(); i++) {
@@ -1055,8 +1057,10 @@ RouteController {
             // 3. 获取本地坐标系原点经纬度
             QueryWrapper<Param> paramQueryWrapper = new QueryWrapper<>();
             Param param = paramMapper.selectOne(paramQueryWrapper);
-            double localLat = param != null ? Double.parseDouble(param.getLocal_origin_latitude()) : 0;
-            double localLon = param != null ? Double.parseDouble(param.getLocal_origin_longitude()) : 0;
+            double localLat = param != null && StringUtils.isNotBlank(param.getLocal_origin_latitude())
+                    ? Double.parseDouble(param.getLocal_origin_latitude()) : Double.NaN;
+            double localLon = param != null && StringUtils.isNotBlank(param.getLocal_origin_longitude())
+                    ? Double.parseDouble(param.getLocal_origin_longitude()) : Double.NaN;
 
             // 4. 创建更新后的路线对象 - 只复制非空属性
             Route routeToUpdate = new Route();
@@ -1271,9 +1275,7 @@ RouteController {
         try {
             // 检查XY坐标和经纬度是否都为0或空
             boolean xyEmpty = StringUtils.isBlank(station.getPositionX()) ||
-                    StringUtils.isBlank(station.getPositionY()) ||
-                    "0".equals(station.getPositionX()) ||
-                    "0".equals(station.getPositionY());
+                    StringUtils.isBlank(station.getPositionY());
 
             boolean latLonEmpty = StringUtils.isBlank(station.getLongitude()) ||
                     StringUtils.isBlank(station.getLatitude()) ||
@@ -1287,6 +1289,9 @@ RouteController {
 
             // 如果XY坐标为空或0，根据经纬度计算XY坐标
             if (xyEmpty) {
+                if (!Double.isFinite(localLat) || !Double.isFinite(localLon)) {
+                    throw new IllegalArgumentException("Geographic origin is required to convert latitude/longitude to XY");
+                }
                 double longitude = Double.parseDouble(station.getLongitude());
                 double latitude = Double.parseDouble(station.getLatitude());
 
@@ -1298,7 +1303,7 @@ RouteController {
                 station.setPositionZ("0");
             }
             // 如果经纬度为空或0，根据XY坐标计算经纬度
-            else if (latLonEmpty) {
+            else if (latLonEmpty && Double.isFinite(localLat) && Double.isFinite(localLon)) {
                 double x = Double.parseDouble(station.getPositionX());
                 double y = Double.parseDouble(station.getPositionY());
 

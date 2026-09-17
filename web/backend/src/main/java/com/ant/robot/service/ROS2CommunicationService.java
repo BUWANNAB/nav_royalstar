@@ -202,7 +202,7 @@ public class ROS2CommunicationService implements SmartLifecycle {
             vehiclePoseSub = createSubscriptionWithRetry(
                     "tf_pose", PoseStamped.class, this::handleVehiclePose, 10, 3000);
             QoSProfile buildMapStatusQos = QoSProfile.defaultProfile()
-                    .setDurability(Durability.TRANSIENT_LOCAL)
+                    .setDurability(Durability.VOLATILE)
                     .setReliability(Reliability.RELIABLE);
             buildMapStatusSub = createSubscriptionWithRetry(
                     "buildmap_status", std_msgs.msg.String.class,
@@ -539,28 +539,27 @@ public class ROS2CommunicationService implements SmartLifecycle {
             // 计算航向角
             Heading = quaternionToHeading(orientation);
             
-            QueryWrapper<Param> paramQueryWrapper = new QueryWrapper<>();
-            Param param = paramMapper.selectOne(paramQueryWrapper);
-            Local_Lat = Double.parseDouble(param.getLocal_origin_latitude());
-            Local_Lon = Double.parseDouble(param.getLocal_origin_longitude());
-
-            // 转换为经纬度
-            if (llh2xyzController != null) {
-                double[] latLon = llh2xyzController.convertFromLocalCoordinates(
-                        Local_Lat, Local_Lon, x, y, z);
-
-                if (latLon != null && latLon.length >= 2) {
-                    Lat = latLon[0];
-                    Lon = latLon[1];
-
-                    // 广播到前端
-                    safeBroadcastPose();
-                } else {
-                    log.warn("坐标转换返回空结果");
+            // Indoor pose delivery must not depend on optional geographic origin settings.
+            try {
+                Param param = paramMapper.selectOne(new QueryWrapper<>());
+                if (param != null && llh2xyzController != null
+                        && param.getLocal_origin_latitude() != null
+                        && !param.getLocal_origin_latitude().isBlank()
+                        && param.getLocal_origin_longitude() != null
+                        && !param.getLocal_origin_longitude().isBlank()) {
+                    Local_Lat = Double.parseDouble(param.getLocal_origin_latitude());
+                    Local_Lon = Double.parseDouble(param.getLocal_origin_longitude());
+                    double[] latLon = llh2xyzController.convertFromLocalCoordinates(
+                            Local_Lat, Local_Lon, x, y, z);
+                    if (latLon != null && latLon.length >= 2) {
+                        Lat = latLon[0];
+                        Lon = latLon[1];
+                    }
                 }
-            } else {
-                log.warn("llh2xyzController为空，跳过坐标转换");
+            } catch (Exception e) {
+                log.debug("Geographic pose conversion skipped: {}", e.getMessage());
             }
+            safeBroadcastPose();
 
             // 安全调用回调接口
             safeInvokeCallback(msg, "车辆位姿");

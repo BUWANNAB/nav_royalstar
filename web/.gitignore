@@ -33,3 +33,13 @@ deploy/install/no_network_packages/*.deb
 # ===== 系统/编辑器 =====
 .DS_Store
 Thumbs.db
+
+# Explicitly distributed field example maps; other runtime maps stay ignored.
+!pcd/20269171109/
+!pcd/20269171109/**
+!pcd/202609171123/
+!pcd/202609171123/**
+!maps/20269171109/
+!maps/20269171109/**
+!maps/202609171123/
+!maps/202609171123/**

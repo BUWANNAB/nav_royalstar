@@ -117,7 +117,15 @@ private:
       std::lock_guard<std::mutex> lock(mutex_);
       if (state_ != MapState::IDLE) {
         RCLCPP_WARN(this->get_logger(), "mapping is already running, ignore start command.");
-        publishStatus("already_mapping");
+        if (state_ == MapState::MAPPING && map_has_data_ &&
+            std::chrono::steady_clock::now() - last_cloud_time_ < std::chrono::seconds(2)) {
+          publishStatus("map_data_ready");
+        } else if (state_ == MapState::STARTING ||
+                   (state_ == MapState::MAPPING && !map_has_data_)) {
+          publishStatus("starting");
+        } else {
+          publishStatus("already_mapping");
+        }
         return;
       }
 
@@ -296,6 +304,7 @@ void stopMappingAndStartRvizLivox()
     }
 
     std::lock_guard<std::mutex> lock(mutex_);
+    last_cloud_time_ = std::chrono::steady_clock::now();
     if (state_ == MapState::MAPPING && !map_has_data_) {
       map_has_data_ = true;
       RCLCPP_WARN(this->get_logger(), "LIO-SAM map data is ready.");
@@ -480,6 +489,7 @@ private:
   std::mutex mutex_;
   MapState state_ = MapState::IDLE;
   bool map_has_data_ = false;
+  std::chrono::steady_clock::time_point last_cloud_time_{};
 
   pid_t livox_pid_ = -1;
   pid_t lio_sam_pid_ = -1;
